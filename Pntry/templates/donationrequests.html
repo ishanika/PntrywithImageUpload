@@ -1,0 +1,29 @@
+<ion-view title="Requested Donations">
+  <ion-nav-buttons side="left">
+    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+  </ion-nav-buttons>  
+  <ion-content class="has-header">
+
+    <div class="list list-inset"> 
+
+
+    <div class="item item-divider item-text-wrap">
+        Donation Requests
+    </div>  
+
+        <ion-list>
+
+            <ion-item ng-repeat="(key, value) in requestedfood | groupBy: 'RequestDate'">
+                <span class="item-icon-right" ng-click="viewRequest(key)">
+                    <i class="icon ion-arrow-right-b"></i>
+                        {{key}}
+                </span>
+
+       </ion-item>
+
+      </ion-list>
+
+     </div>
+
+  </ion-content>
+</ion-view>

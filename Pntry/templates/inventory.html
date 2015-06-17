@@ -1,0 +1,72 @@
+<ion-view title="Inventory" ng-init="getAllFood()">
+  <ion-nav-buttons side="left">
+    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+  </ion-nav-buttons>  
+  <ion-content class="has-header">
+
+    <div class="list list-inset"> 
+
+
+    <div class="item item-divider item-text-wrap">
+        Inventory
+        <p class="small">Add food items to this list.</p>
+    </div>  
+
+
+
+        <div class="item item-input-inset">
+
+            <label class="item-input-wrapper">          
+
+                <input type="text" name="Name" placeholder="Add a food item" ng-model="food.Name" required>
+
+            </label>
+
+            <label class="item-input-wrapper">          
+
+                <input type="text" name="NumberInStock" placeholder="Number in stock" ng-model="food.NumberInStock" required>
+
+            </label>
+
+            <button class="button button-small button-balanced" ng-click="addFood(food)">
+              <i class="icon ion-plus"></i>
+            </button>
+
+        </div>
+
+        <ion-list>
+
+        <ion-item ng-repeat="food in inventory">
+
+        <div class="item item-input-inset">
+
+            <label class="item-wrapper">            
+
+                <input type="text" name="Name" placeholder="food items" ng-model="food.Name" required>
+
+            </label>
+
+            <label class="item-input-wrapper">          
+
+                <input type="text" name="NumberInStock" placeholder="Amount" ng-model="food.NumberInStock" required>
+
+            </label>
+
+            <button class="button button-small button-assertive" ng-click="removeFood($index)">
+              <i class="icon ion-minus"></i>
+            </button>
+
+            <button class="button button-small button-calm" ng-click="updateFood($index)">
+                <i class="icon ion-checkmark"></i>
+            </button>
+
+        </div>
+
+       </ion-item>
+
+      </ion-list>
+
+     </div>
+
+  </ion-content>
+</ion-view>

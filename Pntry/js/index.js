@@ -16,6 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var everlive = new Everlive({
+    apiKey: 'JiHugAPcEgftCWfK',
+    scheme: 'http' // switch this to 'https' if you'd like to use TLS/SSL encryption and if it is included in your subscription tier
+});
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -35,6 +41,28 @@ var app = {
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
         navigator.splashscreen.hide();
+        var devicePushSettings = {
+            iOS: {
+                badge: 'true',
+                sound: 'true',
+                alert: 'true'
+            },
+            android: {
+                projectNumber: 'api-project-214937294494'
+            },
+            wp8: {
+                channelName: 'EverlivePushChannel'
+            },
+            notificationCallbackIOS: onPushNotificationReceived,
+            notificationCallbackAndroid: onPushNotificationReceived,
+            notificationCallbackWP8: onPushNotificationReceived
+        };
+
+        everlive.push.register(devicePushSettings, function() {
+            alert("Successful registration in Backend Services. You are ready to receive push notifications.");
+        }, function(err) {
+            alert("Error: " + err.message);
+        });
     },
     // Update DOM on a Received Event
     receivedEvent: function(id) {
@@ -48,3 +76,8 @@ var app = {
         console.log('Received Event: ' + id);
     }
 };
+
+function onPushNotificationReceived(e) {
+    alert(JSON.stringify(e));
+};
+
