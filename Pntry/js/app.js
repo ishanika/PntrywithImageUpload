@@ -18,8 +18,8 @@ angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.servic
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-    //$scope.images = FileService.images();
-    $scope.$apply();
+   		$scope.images = FileService.images();
+		$scope.$apply();
   });
 })
 
@@ -84,26 +84,19 @@ angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.servic
         }
       }
     })
+  
   //Gallery
     .state('app.imagegallery', {
       url: "/imagegallery",
       views: {
         'menuContent' :{
           templateUrl: "templates/imagegallery.html",
-          controller: 'AppCtrl'
+          controller: 'ImageCtrl'
         }
       }
     })
-  //Gallery
-    .state('app.test', {
-      url: "/test",
-      views: {
-        'menuContent' :{
-          templateUrl: "templates/test.html",
-          controller: 'FileUploadCtrl'
-        }
-      }
-    })
+ 
+  
     //home
     .state('app.home', {
       url: "/home",

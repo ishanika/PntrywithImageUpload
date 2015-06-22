@@ -1,14 +1,6 @@
 angular.module('pntry.services', [])
 
 
-.factory('GetUU', function() {
-	var uploadurl = "http://api.everlive.com/v1/JiHugAPcEgftCWfK/Files";
-	return  {
-    	query: function() {
-		return uploadurl;
-		}
-	}
-})
 .factory('API', function() {
 
   var api_key = 'JiHugAPcEgftCWfK';
@@ -77,6 +69,7 @@ var el = new Everlive({
         getAllFood: function(){        
             return data.get()
                 .then(function (data) {
+                //console.log(data);
                     return data;
                 },
                 function(error) {
@@ -186,6 +179,7 @@ var el = new Everlive({
                 });               
         },
         
+        
     }
 })
 
@@ -286,20 +280,87 @@ var el = new Everlive({
  
 })
 
+.factory('FileAPI', function(API) {
+	var el = new Everlive({
+        apiKey: API,
+        scheme: 'http',
+        token: localStorage.getItem('token')
+    });
+	//var data = el.Files().get();
+    var data = new Everlive(API);
+    var query = new Everlive.Query();
 
-
-.factory('FileService', function() {
-  var images;
-  var IMAGE_STORAGE_KEY = 'images';
- 
-  function getImages() {
-    var img = window.localStorage.getItem(IMAGE_STORAGE_KEY);
-    if (img) {
-      images = JSON.parse(img);
-    } else {
-      images = [];
+    return {
+        getAllFiles: function(){        
+            return data.Files.get(query) 
+                .then(function (data) {
+                //console.log(data);
+                    return data;
+                },
+                function(error) {
+                    return error;
+                });               
+        },
+        
     }
-    return images;
+})
+
+.factory('AppFileService', function(API) {
+    
+	var el = new Everlive({
+        apiKey: API,
+        scheme: 'http',
+        token: localStorage.getItem('token')
+    });
+	var data = el.data('Food');
+    var query = new Everlive.Query();
+	query.where().gt('Length', 50000);
+    return {
+        getImagegallery: function(){
+            alert("test123");
+        	return data.get(query)
+            	.then(function (data) {
+                	return data;
+                 },
+                 function(error) {
+                 	return error;
+               });               
+        },
+     }
+})
+
+.factory('FileService', function(API,AppFileService,$q) {
+ var images;
+  var IMAGE_STORAGE_KEY = 'images';
+  var imageresults;
+  var sliderimages = [];
+
+  
+  function getImages() {
+         
+	var el = new Everlive(API);
+	var query = new Everlive.Query();
+	//query.where().eq('ContentType','image/jpg').done();
+	el.Files.get(query) // filter
+        .then(function(data){
+        //console.log(data);
+        /*var itemcount=data.result.length;
+        	 for (var i = itemcount - 1; i >= 0; i--) {
+                 sliderimages.push({Filename : data.result[i].Filename , Uri : data.result[i].Uri})
+            }
+        	
+          //imageresults =  JSON.stringify(data.result);
+          */
+        images= data;
+          console.log(data); 
+        },
+    function(error){
+        alert(JSON.stringify(error));
+    });
+    
+    //images =imageresults;//JSON.stringify(images);// [{"Filename":"cdv_photo_002.jpg","Uri":"http://bs1.cdn.telerik.com/v1/JiHugAPcEgftCWfK/97c20e20-1512-11e5-8cfb-75aec785d73a"},{"Filename":"cdv_photo_003.jpg","Uri":"http://bs1.cdn.telerik.com/v1/JiHugAPcEgftCWfK/bef9ba60-1512-11e5-8cfb-75aec785d73a"}];
+    //alert(images)  
+    //return images;
   };
  
   function addImage(img) {
@@ -308,14 +369,18 @@ var el = new Everlive({
   };
  
   return {
+      
     storeImage: addImage,
     images: getImages
-  }
+  }  
+ 
 })
 
-.factory('ImageService', function($cordovaCamera, FileService, $q, $cordovaFile) {
- 	
-  function makeid() {
+
+
+.factory('ImageService', function($q, $timeout,$cordovaCamera, $cordovaFile,$cordovaFileTransfer,FileService,API) {
+
+    function makeid() {
     var text = '';
     var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
  
@@ -325,7 +390,7 @@ var el = new Everlive({
     return text;
   };
  
-  function optionsForType(type) {
+ 	function optionsForType(type) {
     var source;
     switch (type) {
       case 0:
@@ -345,31 +410,48 @@ var el = new Everlive({
     };
   }
  
-  function saveMedia(type) {
-     var deferred = $q.defer();
-    return $q(function(resolve, reject) {
-        var deferred = $q.defer();
-      var options = optionsForType(type);
- 	
-      $cordovaCamera.getPicture(options).then(function(imageUrl) {
-        var name = imageUrl.substr(imageUrl.lastIndexOf('/') + 1);
-        var namePath = imageUrl.substr(0, imageUrl.lastIndexOf('/') + 1);
-        var newName = makeid() + name;
-        $cordovaFile.copyFile(namePath, name, cordova.file.dataDirectory, newName)
-          .then(function(info) {
-            //FileService.storeImage(newName);
-            alert("FileService Called");
-            deferred.resolve(info);
-          }, function(e) {
-            //reject();
-            deferred.reject(e);
-          });
-      });
-        //return deferred.promise;
-    })
-  }
+  var saveimageonapi = function(type) {
+    var deferred = $q.defer();
+	
+    $timeout(function() {
+        var options = optionsForType(type);
+        $cordovaCamera.getPicture(options).then(function(imageUrl) {
+            var el = new Everlive({
+            apiKey: API,
+            scheme: 'http',
+            token: localStorage.getItem('token')
+            });
+            var apiRemoteUrl = el.Files.getUploadUrl(), filePath = imageUrl;
+            var options = {
+                fileKey: "file",
+                fileName: imageUrl.substr(imageUrl.lastIndexOf('/') + 1),
+                chunkedMode: false,
+                mimeType: "image/jpg"
+            };
+			//alert(apiRemoteUrl);
+            $cordovaFileTransfer.upload(apiRemoteUrl, filePath, options).then(function(result) {
+                //console.log("SUCCESS: " + JSON.stringify(result.response));
+                //console.log('Result_' + result.response[0] + '_ending');
+                alert("success");
+                //alert(JSON.stringify(result.response));
+                deferred.resolve(result);
+
+            }, function(err) {
+                console.log("ERROR: " + JSON.stringify(err));
+                alert(JSON.stringify(err));
+                deferred.reject(err);
+            }, function (progress) {
+                // constant progress updates
+            });
+            
+        });
+    }, 1000);
+
+    return deferred.promise;
+  };
+
   return {
-      //var deferred = $q.defer();
-    handleMediaDialog: saveMedia
-  }
+    handleMediaDialog: saveimageonapi
+  };
+
 });

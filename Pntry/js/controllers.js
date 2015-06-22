@@ -42,7 +42,7 @@ angular.module('pntry.controllers',[])
   $scope.testLoginStatus = function() {     
      User.me().then(function(data){
 		//alert(data.result.Email);
-      console.log(data)
+      //console.log(data)
       if(!data.result){
         $ionicPopup.alert({
             title: 'Your session has expired',
@@ -231,95 +231,9 @@ angular.module('pntry.controllers',[])
             });
       });
     };
+   
     
-
-
-    
-    
-    $scope.urlForImage = function(imageName) {
-    	var trueOrigin = cordova.file.dataDirectory + imageName;
-    	return trueOrigin;
-  	};
- 
-    $scope.addMedia = function() {
-        $scope.hideSheet = $ionicActionSheet.show({
-          buttons: [
-            { text: 'Take photo' },
-            { text: 'Photo from library' }
-          ],
-          titleText: 'Add images',
-          cancelText: 'Cancel',
-          buttonClicked: function(index) {
-           	 //$scope.addImage(index);
-              //$scope.uploadFile(index);
-              //$scope.openPhotoLibrary(index);
-          }
-        });
-    };
-    
-    $scope.uploadFile = function() {
-         $scope.hideSheet();
- 		Upload.fileTo('http://api.everlive.com/v1/JiHugAPcEgftCWfK/Files').then(
-			function(res) {
-                 $scope.$apply();
-				alert('Success');
-			}, function(err) {
-                console.log(err);
-				//alert('error');
-			})
-		;
- 	};
-    
-    $scope.addImage = function(type) {
-        $scope.hideSheet();
-        ImageService.handleMediaDialog(type).then(function() {
-          $scope.$apply();
-        });
-   };
-  
-    $scope.sendEmail = function() {
-        if ($scope.images != null && $scope.images.length > 0) {
-          var mailImages = [];
-          var savedImages = $scope.images;
-          if ($cordovaDevice.getPlatform() == 'Android') {
-            // Currently only working for one image..
-            var imageUrl = $scope.urlForImage(savedImages[0]);
-            var name = imageUrl.substr(imageUrl.lastIndexOf('/') + 1);
-            var namePath = imageUrl.substr(0, imageUrl.lastIndexOf('/') + 1);
-            $cordovaFile.copyFile(namePath, name, cordova.file.externalRootDirectory, name)
-            .then(function(info) {
-              mailImages.push('' + cordova.file.externalRootDirectory + name);
-              $scope.openMailComposer(mailImages);
-            }, function(e) {
-              reject();
-            });
-          } else {
-            for (var i = 0; i < savedImages.length; i++) {
-              mailImages.push('' + $scope.urlForImage(savedImages[i]));
-            }
-            $scope.openMailComposer(mailImages);
-          }
-        }
-  	};
- 
-  	$scope.openMailComposer = function(attachments) {
-        var bodyText = '<html><h2>My Images</h2></html>';
-        var email = {
-            to: 'some@email.com',
-            attachments: attachments,
-            subject: 'Devdactic Images',
-            body: bodyText,
-            isHtml: true
-          };
-
-        $cordovaEmailComposer.open(email).then(null, function() {
-          for (var i = 0; i < attachments.length; i++) {
-            var name = attachments[i].substr(attachments[i].lastIndexOf('/') + 1);
-            $cordovaFile.removeFile(cordova.file.externalRootDirectory, name);
-          }
-        });
-  	};
-    
+       
     // open PhotoLibrary
     $scope.openPhotoLibrary = function() {
         
@@ -377,311 +291,113 @@ angular.module('pntry.controllers',[])
     };
     
     
+     
+  
   
 })
 
 
 
-.controller('CamCtrl', ['$scope', '$location', 'GetUU',
-	function($scope, $location, GetUU) {
+.controller ('ImageCtrl', function ($scope, $cordovaDevice, $cordovaFile, $ionicPlatform, $cordovaEmailComposer, $ionicActionSheet, ImageService, FileService, AppFileService,FileAPI){
+    this.items = []
 
-	// init variables
-	$scope.data = {};
-	$scope.obj;
-	var pictureSource;   // picture source
-	var destinationType; // sets the format of returned value
-	var url;
-	
-	// on DeviceReady check if already logged in (in our case CODE saved)
-	ionic.Platform.ready(function() {
-		console.log("ready get camera types");
-		if (!navigator.camera)
-			{
-			// error handling
-			return;
-			}
-		//pictureSource=navigator.camera.PictureSourceType.PHOTOLIBRARY;
-		pictureSource=navigator.camera.PictureSourceType.CAMERA;
-		destinationType=navigator.camera.DestinationType.FILE_URI;
-		});
-	
-	// get upload URL for FORM
-	GetUU.query(function(response) {
-		$scope.data = response;
-		console.log("got upload url ", $scope.data.uploadurl);
-		});
-	
-      
-     
-     
-	// take picture
-	$scope.takePicture = function() {
-		//console.log("got camera button click");
-		var options =   {
-			quality: 50,
-			destinationType: destinationType,
-			sourceType: pictureSource,
-			encodingType: 0
-			};
-		if (!navigator.camera)
-			{
-			// error handling
-			return;
-			}
-		navigator.camera.getPicture(
-			function (imageURI) {
-				console.log("got camera success ", imageURI);
-				$scope.mypicture = imageURI;
-				},
-			function (err) {
-				console.log("got camera error ", err);
-				// error handling camera plugin
-				},
-			options);
-		};
-
-	// do POST on upload url form by http / html form    
-	$scope.update = function(obj) {
-		if (!$scope.data.uploadurl)
-			{
-			// error handling no upload url
-			return;
-			}
-		if (!$scope.mypicture)
-			{
-			// error handling no picture given
-			return;
-			}
-		var options = new FileUploadOptions();
-		options.fileKey="ffile";
-		options.fileName=$scope.mypicture.substr($scope.mypicture.lastIndexOf('/')+1);
-		options.mimeType="image/jpeg";
-		var params = {};
-		params.other = obj.text; // some other POST fields
-		options.params = params;
-		alert("test");
-		//console.log("new imp: prepare upload now");
-		var ft = new FileTransfer();
-		ft.upload($scope.mypicture, encodeURI($scope.data.uploadurl), uploadSuccess, uploadError, options);
-		function uploadSuccess(r) {
-			// handle success like a message to the user
-			}
-		function uploadError(error) {
-			//console.log("upload error source " + error.source);
-			//console.log("upload error target " + error.target);
-			}
-		};
-    $scope.takePic = function() {
-        var options =   {
-            quality: 50,
-            destinationType: Camera.DestinationType.FILE_URI,
-            sourceType: 1,      // 0:Photo Library, 1=Camera, 2=Saved Photo Album
-            encodingType: 0     // 0=JPG 1=PNG
-        }
-        navigator.camera.getPicture(onSuccess,onFail,options);
-    };
-        var onSuccess = function(FILE_URI) {
-        console.log(FILE_URI);
-        $scope.picData = FILE_URI;
+   	$scope.getAllImages = function() {    
+      FileAPI.getAllFiles().then(function(data){
+        $scope.allimages = (data.result);
         $scope.$apply();
+      }); 
     };
-    var onFail = function(e) {
-        console.log("On fail " + e);
-        console.log("upload error source " + e.source);
-		console.log("upload error target " + e.target);
-    };
-    $scope.send = function() {   
-        var myImg = $scope.picData;
-        var options = new FileUploadOptions();
-        options.fileKey="post";
-        options.chunkedMode = false;
-        var params = {};
-        params.user_token = localStorage.getItem('auth_token');
-        params.user_email = localStorage.getItem('email');
-        //options.params = params;
-        var ft = new FileTransfer();
-        ft.upload(myImg, encodeURI("http://api.everlive.com/v1/JiHugAPcEgftCWfK/Files"), onSuccess, onFail, options);
-    };
-}])
-
-
-.controller('newPostCtrl', function($scope, $cordovaFile, $cordovaCamera) {
-    // 1
-	$scope.images = [];
-    var theImage;
-    $scope.addImage = function() {
-        // 2
-        var options = {
-            destinationType : Camera.DestinationType.FILE_URI,
-            sourceType : Camera.PictureSourceType.CAMERA, // Camera.PictureSourceType.PHOTOLIBRARY
-            allowEdit : false,
-            encodingType: Camera.EncodingType.JPEG,
-            popoverOptions: CameraPopoverOptions,
-        };
-
-        // 3
-        $cordovaCamera.getPicture(options).then(function(imageData) {
-			
-            console.log(imageData);
-            
-            // 4
-            onImageSuccess(imageData);
-
-            function onImageSuccess(fileURI) {
-                createFileEntry(fileURI);
-            }
-
-            function createFileEntry(fileURI) {
-                 console.log("entered - createFileEntry :"+fileURI);
-                //window.resolveLocalFileSystemURL(fileURI, copyFile, fail);
-                
-                
-                // resolve filename and set global filename variable
-			window.resolveLocalFileSystemURL(fileURI, function(fileEntry) {
-				fileName = fileEntry.name;
-				
-				var options = new FileUploadOptions();
-				options.fileKey = "file";
-				options.fileName = fileURI.substr(fileURI.lastIndexOf('/') + 1);
-			
-				/*if (cordova.platformId == "android") {
-				options.fileName += ".jpg" 
-				}*/
-			
-				options.params = {text : "text"}; // if we need to send parameters to the server request 
-				options.headers = {
-					'Authorization': "token"
-				};
-            
-				//set up the Backend for the file upload 
-				var el = new Everlive('JiHugAPcEgftCWfK');
-				var uploadUrl = el.Files.getUploadUrl();
-				console.log("uploadUrl:"+uploadUrl);
-				var ft = new FileTransfer();
-				ft.upload(
-					fileURI,
-					uploadUrl,
-					onFileUploadSuccess,
-					onFileTransferFail,
-					options);
-			}, function(error) {
-				console.log('about to resolve this files errors');
-				console.log(error.code);
-			});
-            
-                
-            }
-			function onFileUploadSuccess (result) {
-				console.log("FileTransfer.upload");
-				console.log("Code = " + result.responseCode);
-				console.log("Response = " + result.response);
-				console.log("Sent = " + result.bytesSent);
-				var res = JSON.parse(result.response);
-				var uploadedFileUri = res.Result[0].Uri;
-				console.log("Link to uploaded file:" + uploadedFileUri);
-				
-			}
-            function onFileTransferFail (error) {
-				console.log("FileTransfer Error:");
-				console.log("Code: " + error.code);
-				console.log("Source: " + error.source);
-				console.log("Target: " + error.target);
-			}
-            // 5
-            function copyFile(fileEntry) {
-               
-                var name = fileEntry.fullPath.substr(fileEntry.fullPath.lastIndexOf('/') + 1);
-                var newName = makeid() + name;
-				console.log("newName="+newName);
-                window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(fileSystem2) {
-                    fileEntry.copyTo(
-                        fileSystem2,
-                        newName,
-                        onCopySuccess,
-                        fail
-                    );
-                },
-                fail);
-            }
-
-            // 6
-            function onCopySuccess(entry) {
-                $scope.$apply(function () {
-                    $scope.images.push(entry.nativeURL);
-                });
-            }
-
-            function fail(error) {
-                console.log("fail: " + error.code);
-            }
-
-            function makeid() {
-                var text = "";
-                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-                for (var i=0; i < 5; i++) {
-                    text += possible.charAt(Math.floor(Math.random() * possible.length));
-                }
-                return text;
-            }
-
-        }, function(err) {
-            console.log(err);
-        });
-    }
-	
-    $scope.urlForImage = function(imageName) {
-        var name = imageName.substr(imageName.lastIndexOf('/') + 1);
-        var trueOrigin = cordova.file.dataDirectory + name;
-        return trueOrigin;
-    }
     
-    $scope.sendEmail = function() {
-        // 1
-        var bodyText = "<h2>Look at this images!</h2>";
-        if (null != $scope.images) {
-            var images = [];
-            var savedImages = $scope.images;
-            for (var i = 0; i < savedImages.length; i++) {
-                // 2
-                images.push("" + $scope.urlForImage(savedImages[i]));
-                // 3
-                images[i] = images[i].replace('file://', '');
-            }
+	$ionicPlatform.ready(function(){
+        //alert('platform ready');
+           FileAPI.getAllFiles().then(function(data){
+        $scope.allimages = (data.result);
+        $scope.$apply();
+      }); 
 
-            // 4
-            window.plugin.email.open({
-                to:          ["siva@akikodesign.com"], // email addresses for TO field
-                cc:          Array, // email addresses for CC field
-                bcc:         Array, // email addresses for BCC field
-                attachments: images, // file paths or base64 data streams
-                subject:    "Just some images", // subject of the email
-                body:       bodyText, // email body (for HTML, set isHtml to true)
-                isHtml:    true, // indicats if the body is HTML or plain text
-            }, function () {
-                console.log('email view dismissed');
-            },
-            this);
-        }
-    }
-})
-
-.controller('FileUploadCtrl', function($scope, Upload){
- 
-	$scope.uploadFile = function() {
- 		var el = new Everlive('JiHugAPcEgftCWfK');
-				var uploadUrl = el.Files.getUploadUrl();
-				console.log("uploadUrl:"+uploadUrl);
-		Upload.fileTo(uploadUrl).then(
-			function(res) {
-				console.log('success');
-			}, function(err) {
-				// Error
-                console.log('error');
-			});
- 
+	});
+    
+ 	$scope.getImagegallery = function() { 
+        alert('getImagegallery');
+      FileService.images().then(function(data){
+        $scope.images = (data.result);
+        $scope.$apply();
+      }); 
+    };
+    
+    $scope.getImagegallery1 = function() {    
+  		//$scope.images = FileService.images();
+        $scope.$apply();
 	};
+    
+	$scope.urlForImage = function(imageName){
+		var trueOrigin = imageName;//cordova.file.dataDirectory + imageName;
+    return trueOrigin;
+	}
+
+	$scope.addMedia = function(){
+		$scope.hideSheet = $ionicActionSheet.show({
+			buttons:[
+				{text: 'Take photo'},
+				{text: 'Photo from library'}
+			],
+			titleText: 'Add Images',
+			cancelText: 'Cancel',
+			buttonClicked: function(index){
+				$scope.addImage(index);
+			}
+		});
+	}
+
+
+  $scope.addImage = function(type) {
+    $scope.hideSheet();
+    ImageService.handleMediaDialog(type).then(function() {
+      $scope.$apply();
+    });
+  }
+
+
+	$scope.sendEmail = function() {
+    if ($scope.images != null && $scope.images.length > 0) {
+      var mailImages = [];
+      var savedImages = $scope.images;
+      if ($cordovaDevice.getPlatform() == 'Android') {
+        // Currently only working for one image..
+        var imageUrl = $scope.urlForImage(savedImages[0]);
+        var name = imageUrl.substr(imageUrl.lastIndexOf('/') + 1);
+        var namePath = imageUrl.substr(0, imageUrl.lastIndexOf('/') + 1);
+        $cordovaFile.copyFile(namePath, name, cordova.file.externalRootDirectory, name)
+        .then(function(info) {
+          mailImages.push('' + cordova.file.externalRootDirectory + name);
+          $scope.openMailComposer(mailImages);
+        }, function(e) {
+          reject();
+        });
+      } else {
+        for (var i = 0; i < savedImages.length; i++) {
+          mailImages.push('' + $scope.urlForImage(savedImages[i]));
+        }
+        $scope.openMailComposer(mailImages);
+      }
+    }
+  }
+
+  $scope.openMailComposer = function(attachments) {
+    var bodyText = '<html><h2>My Images</h2></html>';
+    var email = {
+        to: 'siva@akikodesign.com',
+        attachments: attachments,
+        subject: 'Akiko Images',
+        body: bodyText,
+        isHtml: true
+      };
  
+    $cordovaEmailComposer.open(email).then(null, function() {
+      for (var i = 0; i < attachments.length; i++) {
+        var name = attachments[i].substr(attachments[i].lastIndexOf('/') + 1);
+        $cordovaFile.removeFile(cordova.file.externalRootDirectory, name);
+      }
+    });
+  }
 });
-
-
