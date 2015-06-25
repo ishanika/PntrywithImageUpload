@@ -298,13 +298,32 @@ angular.module('pntry.controllers',[])
 
 
 
-.controller ('ImageCtrl', function ($scope, $cordovaDevice, $cordovaFile, $ionicPlatform, $cordovaEmailComposer, $ionicActionSheet, ImageService, FileService, AppFileService,FileAPI){
-    this.items = []
-
+.controller ('ImageCtrl', function ($rootScope,$scope, $stateParams,$ionicLoading,$ionicSlideBoxDelegate, $cordovaDevice, $cordovaFile, $ionicPlatform, $cordovaEmailComposer, $ionicActionSheet, ImageService, FileService, AppFileService,FileAPI){
+	
+   
+    
+    $scope.next = function() {
+    	$ionicSlideBoxDelegate.next();
+  	};
+    
+  	$scope.previous = function() {
+    	$ionicSlideBoxDelegate.previous();
+  	};
+    
+    //$scope.slides = [{name:"1"},{name:"2"},{name:"3"},{name:"4"}];
+    
+     $scope.slideChanged = function(index) {
+    	$scope.slideIndex = index;
+  	};
+    
+    
    	$scope.getAllImages = function() {    
       FileAPI.getAllFiles().then(function(data){
         $scope.allimages = (data.result);
-        $scope.$apply();
+          $scope.allimages=(data.result);
+           //$scope.isCameraAvailable = $rootScope.me._id === $stateParams.userId;
+          $scope.$apply();
+          $ionicSlideBoxDelegate.update();
       }); 
     };
     
@@ -312,7 +331,10 @@ angular.module('pntry.controllers',[])
         //alert('platform ready');
            FileAPI.getAllFiles().then(function(data){
         $scope.allimages = (data.result);
+                $scope.allimages=(data.result);
+         //$scope.isCameraAvailable = $rootScope.me._id === $stateParams.userId;       
         $scope.$apply();
+        $ionicSlideBoxDelegate.update();
       }); 
 
 	});
