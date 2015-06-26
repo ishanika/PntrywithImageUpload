@@ -81,7 +81,8 @@
         <ion-slide ng-repeat="slide in allimages">
             
             <span class="gallery">
-                    <img class="gallery-image" ng-src="{{slide.Uri}}"/>
+                    <!--<img class="gallery-image" ng-src="{{slide.Uri}}"/>-->
+                	<img ng-src="{{slide.Uri}}" class="resimgs"/>
                     <div class="gallery-bg"></div>
                     <span class="gallery-title" ng-click="delete(slide)">
                         <i class="ionic ion-ios-trash-outline"></i>

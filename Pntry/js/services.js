@@ -1,5 +1,5 @@
+//angular.module('pntry.services', ['http-auth-interceptor'])
 angular.module('pntry.services', [])
-
 
 .factory('API', function() {
 
@@ -43,6 +43,16 @@ var el = new Everlive({
             function(error) {
                 return error;
             });
+    },
+    logout: function(user) {
+      $http.post('https://logout', {}, { ignoreAuthModule: true })
+      .finally(function(data) {
+        delete $http.defaults.headers.common.Authorization;
+        $rootScope.$broadcast('event:auth-logout-complete');
+      });			
+    },	
+    loginCancelled: function() {
+      authService.loginCancelled();
     },
     me: function() {
         return el.Users.currentUser()
@@ -376,7 +386,24 @@ var el = new Everlive({
  
 })
 
+.factory('Weather', function($resource) {
 
+        var API_PATH = 'http://api.openweathermap.org/data/2.5/weather';
+
+        var Weather = $resource(API_PATH);
+		
+        return {
+            getWeather: function(weatherParams) {
+               
+                return Weather.get(weatherParams, function(successResult) {
+                    //console.log(successResult);
+                    return successResult;
+                }, function(errorResult) {
+                    console.log(errorResult);
+                });      
+            }
+        }
+    })
 
 .factory('ImageService', function($q, $timeout,$cordovaCamera, $cordovaFile,$cordovaFileTransfer,FileService,API) {
 

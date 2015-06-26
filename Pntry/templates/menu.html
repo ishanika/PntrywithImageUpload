@@ -28,7 +28,15 @@
             <ion-item nav-clear menu-close ng-click="testLoginStatus();getAllImages()" href="#/app/imagegallery">
                 <i class="icon ion-compose"></i> Image Gallery
             </ion-item>
-           
+             <ion-item nav-clear menu-close ng-click="checkWeather()" href="#/app/city">
+                <i class="icon ion-compose"></i> city weather
+            </ion-item>
+             <ion-item nav-clear menu-close ng-click="checkWeather()" href="#/app/coordinates">
+                <i class="icon ion-compose"></i> coordinates weather
+            </ion-item>
+           	<ion-item nav-clear menu-close ui-sref="app.logout">
+          		Logout
+        	</ion-item>
         </ion-list>
     </ion-content>
   </ion-side-menu>

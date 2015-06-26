@@ -1,6 +1,6 @@
 // pntry app
 
-angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.services','angular.filter'])
+angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.services','angular.filter','ngResource'])
 
 .config(function($compileProvider){
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension|local|file):/);
@@ -18,8 +18,9 @@ angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.servic
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-   		$scope.images = FileService.images();
-		$scope.$apply();
+      
+   		//$scope.images = FileService.images();
+		//$scope.$apply();
   });
 })
 
@@ -96,6 +97,33 @@ angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.servic
       }
     })
  
+   .state('app.city', {
+      url: "/city",
+      views: {
+        'menuContent' : {
+             templateUrl: 'templates/city.html',
+         controller: "cityCtrl"
+        }
+      } 
+    })
+  .state('app.coordinates', {
+      url: "/coordinates",
+      views: {
+        'menuContent' : {
+            templateUrl: 'templates/coordinates.html',
+         controller: "coordinatesCtrl"
+        }
+      } 
+    })
+  
+   .state('app.logout', {
+      url: "/logout",
+      views: {
+        'menuContent' : {
+         controller: "LogoutCtrl"
+        }
+      } 
+    })
   
     //home
     .state('app.home', {
@@ -106,7 +134,8 @@ angular.module('pntry', ['ionic','ngCordova', 'pntry.controllers', 'pntry.servic
           controller: 'AppCtrl'
         }
       }
-    });
+    })
+ ;
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/app/home');
 });

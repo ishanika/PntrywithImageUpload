@@ -27,14 +27,18 @@ angular.module('pntry.controllers',[])
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/login.html', {
-    scope: $scope
+    scope: $scope,
+    animation: 'slide-in-up',
+    focusFirstInput: true
   }).then(function(loginmodal) {
     $scope.loginmodal = loginmodal;
   });
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/register.html', {
-    scope: $scope
+    scope: $scope,
+    animation: 'slide-in-up',
+    focusFirstInput: true
   }).then(function(registermodal) {
     $scope.registermodal = registermodal;
   });
@@ -296,11 +300,44 @@ angular.module('pntry.controllers',[])
   
 })
 
+.controller('cityCtrl', function($scope,Weather) {
 
+        $scope.checkWeather = function() {
+		
+            var city = {
+                q: $scope.city
+            };
+            
+            var temp=Weather.getWeather(city);
+            console.log(temp);
+            $scope.weather =temp;// Weather.getWeather(city);      
+        }
+    })
+
+.controller('coordinatesCtrl', function($scope, Weather) {
+
+        $scope.checkWeather = function() {
+            var coordinates = {
+                lat: $scope.lat,
+                lon: $scope.lon
+            };
+            			console.log('lat:'+$scope.lat+ 'lon: '+$scope.lon);
+		
+            console.log(coordinates);
+
+			 var temp=Weather.getWeather(coordinates);
+            console.log(temp);
+            $scope.weather = temp;//Weather.getWeather(coordinates);       
+        }
+    })
+    
+.controller('LogoutCtrl', function($scope, AuthenticationService) {
+    User.logout();
+})
 
 .controller ('ImageCtrl', function ($rootScope,$scope, $stateParams,$ionicLoading,$ionicSlideBoxDelegate, $cordovaDevice, $cordovaFile, $ionicPlatform, $cordovaEmailComposer, $ionicActionSheet, ImageService, FileService, AppFileService,FileAPI){
-	
-   
+	everliveImages.init('JiHugAPcEgftCWfK');
+   everliveImages.responsiveAll();
     
     $scope.next = function() {
     	$ionicSlideBoxDelegate.next();
